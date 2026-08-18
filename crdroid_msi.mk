@@ -2,8 +2,12 @@
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 
-# Inherit crDroid common configurations
-$(call inherit-product, vendor/crdroid/config/common_full_phone.mk)
+# Inherit Lineage/crDroid base configurations safely
+$(call inherit-product-if-exists, vendor/lineage/config/common_full_phone.mk)
+$(call inherit-product-if-exists, vendor/crdroid/config/common.mk)
+
+# Inherit proprietary vendor blobs
+$(call inherit-product-if-exists, vendor/motorola/msi/msi-vendor.mk)
 
 # Inherit from device makefile
 $(call inherit-product, device/motorola/msi/device.mk)

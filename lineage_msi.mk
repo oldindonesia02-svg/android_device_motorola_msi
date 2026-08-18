@@ -1,26 +1,24 @@
-#
-# SPDX-FileCopyrightText: The LineageOS Project
-# SPDX-License-Identifier: Apache-2.0
-#
-
-# Inherit from those products. Most specific first.
+# Inherit 64-bit telephony core
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 
-# Inherit from msi device
+# Inherit Lineage/crDroid base configurations safely
+$(call inherit-product-if-exists, vendor/lineage/config/common_full_phone.mk)
+$(call inherit-product-if-exists, vendor/crdroid/config/common.mk)
+
+# Inherit proprietary vendor blobs
+$(call inherit-product-if-exists, vendor/motorola/msi/msi-vendor.mk)
+
+# Inherit from device makefile
 $(call inherit-product, device/motorola/msi/device.mk)
 
-# Inherit some common Lineage stuff.
-$(call inherit-product, vendor/lineage/config/common_full_phone.mk)
-
-PRODUCT_DEVICE := msi
 PRODUCT_NAME := lineage_msi
-PRODUCT_BRAND := motorola
-PRODUCT_MODEL := motorola edge 50 fusion
+PRODUCT_DEVICE := msi
 PRODUCT_MANUFACTURER := motorola
+PRODUCT_BRAND := Motorola
+PRODUCT_MODEL := Moto G96
 
 PRODUCT_GMS_CLIENTID_BASE := android-motorola
-
 PRODUCT_BUILD_PROP_OVERRIDES += \
-    BuildDesc="cuscoi_g-user 16 W1UUI36M-W1-ST23 9bcdee release-keys" \
-    BuildFingerprint=motorola/cuscoi_g/msi:16/W1UUI36M-W1-ST23/9bcdee:user/release-keys
+    TARGET_DEVICE=msi \
+    PRODUCT_NAME=msi
