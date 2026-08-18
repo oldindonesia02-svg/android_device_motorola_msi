@@ -1,0 +1,62 @@
+name: crDroid 11 (Android 15) Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compile crDroid 11 by @oldindonesia02-svg
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Maximize Disk Space
+        uses: rokibhasansagar/slimhub_actions@main
+
+      - name: Setup Build Environment
+        run: |
+          sudo apt update
+          sudo apt install -y git-core gnupg flex bison build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 libncurses5-dev libncurses5 x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig python3 python-is-python3 bc libssl-dev rsync ccache
+
+      - name: Setup Google Repo Tool
+        run: |
+          mkdir -p ~/bin
+          curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+          chmod a+x ~/bin/repo
+          sudo ln -sf ~/bin/repo /usr/bin/repo
+
+      - name: Initialize crDroid 11 (Android 15) Source
+        run: |
+          mkdir -p ~/crdroid
+          cd ~/crdroid
+          git config --global user.name "oldindonesia02-svg"
+          git config --global user.email "git@github.com"
+          repo init -u https://github.com/crdroidandroid/android.git -b 15.0 --git-lfs --depth=1
+          
+          # Device & Vendor Trees Direct Clone
+          git clone https://github.com/oldindonesia02-svg/android_device_motorola_msi.git device/motorola/msi --depth=1
+          git clone https://github.com/oldindonesia02-svg/android_vendor_motorola_msi.git vendor/motorola/msi --depth=1
+
+      - name: Sync Source Code
+        run: |
+          cd ~/crdroid
+          repo sync -c --no-clone-bundle --no-tags --optimized-fetch --prune --force-sync -j$(nproc --all)
+
+      - name: Compile crDroid ROM
+        run: |
+          cd ~/crdroid
+          source build/envsetup.sh
+          export ALLOW_MISSING_DEPENDENCIES=true
+          export CCACHE_DIR=~/crdroid/.ccache
+          export USE_CCACHE=1
+          ccache -M 30G
+          lunch crdroid_msi-userdebug || lunch crdroid_msi-ap2a-userdebug
+          mka bacon -j$(nproc --all)
+
+      - name: Upload ROM Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: crDroid-11-msi-ROM
+          path: |
+            ~/crdroid/out/target/product/msi/*.zip
+            ~/crdroid/out/target/product/msi/boot.img
+            ~/crdroid/out/target/product/msi/vendor_boot.img
+            
